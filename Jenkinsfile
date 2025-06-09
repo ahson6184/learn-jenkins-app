@@ -6,6 +6,7 @@ pipeline {
             steps {
                 sh 'echo \'Hello from Jenkins\''
                 sh 'whoami'
+                sh 'echo \'Verifying Pipeline\''
             }
         }
     }
