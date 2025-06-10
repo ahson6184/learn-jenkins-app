@@ -51,13 +51,17 @@ pipeline {
                  sh '''
                     npm install serve
                     npx playwright install
+                    
                     mkdir -p test-results playwright-report
-                    chown -R $(id -u):$(id -g) jest-results playwright-report
+
                     node_modules/.bin/serve -s build &
                     SERVE_PID=$!
+                    
                     sleep 10
-                    npx playwright test --reporter=html
-                    kill $SERVE_PID
+                    
+                    npx playwright test --reporter=html:playwright-report
+                    
+                    kill $SERVE_PID || true   
                  '''
 
             }
@@ -67,7 +71,17 @@ pipeline {
     post {
          always {
             junit 'jest-results/junit.xml'
-            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, icon: '', keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwrght HTML Report', reportTitles: '', useWrapperFileDirectly: true])
+            publishHTML([
+                allowMissing: false, 
+                alwaysLinkToLastBuild: false, 
+                icon: '', 
+                keepAll: false, 
+                reportDir: 'playwright-report', 
+                reportFiles: 'index.html', reportName: 
+                'Playwrght HTML Report', 
+                reportTitles: '', 
+                useWrapperFileDirectly: true
+                ])
         }
     }
 }
