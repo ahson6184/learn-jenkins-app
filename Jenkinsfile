@@ -53,14 +53,16 @@ pipeline {
                         docker {
                             image 'mcr.microsoft.com/playwright:v1.52.0-jammy'
                             reuseNode true
+                            args '-u 1000:1000'
                         }
                     }
                     steps {
                         sh '''
                             npm install serve
-                            npx playwright install
-                            
+                            npx playwright install --with-deps
+
                             mkdir -p test-results playwright-report
+                            chmod -R 777 test-results playwright-report  # Ensure write permissions
 
                             node_modules/.bin/serve -s build &
                             SERVE_PID=$!
