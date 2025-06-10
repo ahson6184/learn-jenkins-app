@@ -58,20 +58,32 @@ pipeline {
                     }
                     steps {
                         sh '''
-                            # Install only serve (Playwright is already installed in the image)
+                            # Clean up any previous test files
+                            rm -rf test-results playwright-report || true
+                            
+                            # Recreate directories with correct permissions
+                            mkdir -p test-results playwright-report
+                            
+                            # Install serve (if not in package.json)
                             npm install serve
                             
-                            # Start server (no permission issues since we're already 1000:1000)
+                            # Start server
                             node_modules/.bin/serve -s build &
                             SERVE_PID=$!
                             
                             # Wait for server to start
                             sleep 10
                             
-                            # Run tests - no need for special permissions
-                            npx playwright test --reporter=html
+                            # Run tests with explicit output directories
+                            npx playwright test \
+                                --output=test-results \
+                                --reporter=html,line \
+                                --reporter-html-output=playwright-report
                             
-                            # Clean up
+                            # Verify results
+                            ls -la playwright-report
+                            
+                            # Clean up server
                             kill $SERVE_PID || true   
                         '''
 
