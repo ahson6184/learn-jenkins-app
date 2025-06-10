@@ -59,13 +59,14 @@ pipeline {
                     steps {
                         sh '''
                             # Clean up any previous test files
-                            rm -rf test-results playwright-report || true
-                            
-                            # Recreate directories with correct permissions
-                            mkdir -p test-results playwright-report
+                            sudo rm -rf test-results playwright-report || true
                             
                             # Install serve (if not in package.json)
                             npm install serve
+
+                            # Recreate directories with correct permissions
+                            mkdir -p test-results playwright-report
+                            
                             
                             # Start server
                             node_modules/.bin/serve -s build &
