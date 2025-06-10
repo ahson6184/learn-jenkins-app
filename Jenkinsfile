@@ -57,11 +57,10 @@ pipeline {
                         }
                     }
                     steps {
+
+                        cleanWs()  // Cleans everything except the pipeline script itself
+
                         sh '''
-                            # Clean up any previous test files
-                            sudo rm -rf test-results playwright-report || true
-                            
-                            # Install serve (if not in package.json)
                             npm install serve
 
                             # Recreate directories with correct permissions
@@ -71,23 +70,11 @@ pipeline {
                             # Start server
                             node_modules/.bin/serve -s build &
                             SERVE_PID=$!
-                            
-                            # Wait for server to start
                             sleep 10
                             
-                            # Run tests with explicit output directories
-                            npx playwright test \
-                                --output=test-results \
-                                --reporter=html,line \
-                                --reporter-html-output=playwright-report
-                            
-                            # Verify results
-                            ls -la playwright-report
-                            
-                            # Clean up server
+                            npx playwright test --reporter=html
                             kill $SERVE_PID || true   
                         '''
-
                     }
                     post {
                         always {
