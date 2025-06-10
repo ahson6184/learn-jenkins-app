@@ -22,7 +22,7 @@ pipeline {
             }
         }
         */
-        stage('Test'){
+        stage('Test') {
              agent {
                 docker {
                     image 'node:18-alpine'
@@ -40,7 +40,7 @@ pipeline {
             
         }
 
-        stage('E2E'){
+        stage('E2E') {
              agent {
                 docker {
                     image 'mcr.microsoft.com/playwright:v1.52.0-jammy'
@@ -50,17 +50,20 @@ pipeline {
              steps {
                  sh '''
                     npm install serve
+                    npx playwright install
                     node_modules/.bin/serve -s build &
+                    SERVE_PID=$!
                     sleep 10
                     npx playwright test --reporter=html
+                    kill $SERVE_PID
                  '''
 
             }
             
         }
     }
-    post{
-        always{
+    post {
+         always {
             junit 'jest-results/junit.xml'
             publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, icon: '', keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwrght HTML Report', reportTitles: '', useWrapperFileDirectly: true])
         }
