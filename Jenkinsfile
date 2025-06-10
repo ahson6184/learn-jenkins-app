@@ -68,6 +68,7 @@ pipeline {
                             sleep 10
                             
                             npx playwright test --reporter=html
+                            ls -la playwright-report
                             
                             kill $SERVE_PID || true   
                         '''
