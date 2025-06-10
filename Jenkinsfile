@@ -51,7 +51,8 @@ pipeline {
                  sh '''
                     npm install serve
                     npx playwright install
-                    chown -R $(id -u):$(id -g) .
+                    mkdir -p test-results playwright-report
+                    chown -R $(id -u):$(id -g) jest-results playwright-report
                     node_modules/.bin/serve -s build &
                     SERVE_PID=$!
                     sleep 10
