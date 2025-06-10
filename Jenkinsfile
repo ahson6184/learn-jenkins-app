@@ -22,50 +22,56 @@ pipeline {
             }
         }
         */
-        stage('Test') {
-             agent {
-                docker {
-                    image 'node:18-alpine'
-                    reuseNode true
+        stage('Tests') {
+            parallel{
+
+                stage('Unit Test') {
+                    agent {
+                        docker {
+                            image 'node:18-alpine'
+                            reuseNode true
+                        }
+                    }
+                    steps {
+                        sh '''
+                            # echo "Test Stage"
+                            test -f build/index.html
+                            npm test
+                        '''
+
+                    }
+                    
                 }
-             }
-             steps {
-                 sh '''
-                    # echo "Test Stage"
-                    test -f build/index.html
-                    npm test
-                 '''
+
+                stage('E2E') {
+                    agent {
+                        docker {
+                            image 'mcr.microsoft.com/playwright:v1.52.0-jammy'
+                            reuseNode true
+                        }
+                    }
+                    steps {
+                        sh '''
+                            npm install serve
+                            npx playwright install
+                            
+                            mkdir -p test-results playwright-report
+
+                            node_modules/.bin/serve -s build &
+                            SERVE_PID=$!
+                            
+                            sleep 10
+                            
+                            npx playwright test --reporter=html
+                            
+                            kill $SERVE_PID || true   
+                        '''
+
+                    }
+                    
+                }
 
             }
-            
-        }
-
-        stage('E2E') {
-             agent {
-                docker {
-                    image 'mcr.microsoft.com/playwright:v1.52.0-jammy'
-                    reuseNode true
-                }
-             }
-             steps {
-                 sh '''
-                    npm install serve
-                    npx playwright install
-                    
-                    mkdir -p test-results playwright-report
-
-                    node_modules/.bin/serve -s build &
-                    SERVE_PID=$!
-                    
-                    sleep 10
-                    
-                    npx playwright test --reporter=html:playwright-report
-                    
-                    kill $SERVE_PID || true   
-                 '''
-
-            }
-            
         }
     }
     post {
